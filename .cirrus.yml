@@ -1,0 +1,39 @@
+env:
+    CIRRUS_CLONE_DEPTH: 1
+    CIRRUS_WORKING_DIR: "/tmp/ci"
+
+    rclone_conf: "ENCRYPTED[6ade1bbd9d15265109b65a5d3a7cfe3458dc65d71fd3243da4b947d6d183650fcd50d6c753e32e5baf930f43b59aab35]"
+
+task:
+  name: master
+  timeout_in: 2h
+  container:
+    image: dopaemon/docker-image:android
+    cpu: 8
+    memory: 24G
+
+  Install_Packages_Ubuntu_script:
+    - sudo apt-get purge openjdk-8-jdk openjdk-8-jre openjdk-11-jdk openjdk-11-jre -y
+    - sudo apt-get install -y bsdmainutils openjdk-8-jdk git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip python python3 bc libc6
+    - mkdir -p /tmp/ci/android_build/bin && curl https://storage.googleapis.com/git-repo-downloads/repo > /tmp/ci/android_build/bin/repo && chmod a+x /tmp/ci/android_build/bin/repo
+    - touch ~/.profile
+    - echo "PATH="/tmp/ci/android_build/bin:${PATH}"" >> ~/.profile
+    - source ~/.profile
+  Repo_Sync_LineageOS_script:
+    - cd /tmp/ci
+    - mkdir -p lineage
+    - cd lineage
+    - repo init -u git://github.com/LineageOS/android.git -b cm-14.1
+    - repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+    - git clone https://github.com/johnmike30/android_device_samsung_on7xelte.git device/samsung/on7xelte
+    - git clone https://github.com/GhaithCraft/android_device_samsung_exynos7870-common.git device/samsung/exynos7870-common
+    - git clone https://github.com/UbPorts-On7xelte/android_device_samsung_on7xelte.git device/samsung/on7xelte
+    - git clone -b cm-14.1 https://github.com/Exynos7870/android_hardware_samsung.git hardware/samsung
+    - git clone -b cm-14.1 https://github.com/lzzy12/android_hardware_samsung_slsi-cm_exynos.git hardware/samsung/slsi-cm/exynos
+    - git clone -b cm-14.1 https://github.com/Exynos7870/android_hardware_samsung_slsi-cm_exynos5.git hardware/samsung/slsi-cm/exynos5
+    - git clone -b cm-14.1 https://github.com/LineageOS/android_hardware_samsung_slsi-cm_openmax.git hardware/samsung_slsi-cm/openmax
+  Build_script:
+    - cd /tmp/ci/lineage
+    - source build/envsetup.sh
+    - lunch lineage_on7xelte-userdebug
+    - mka bacon -j$(nproc --all)
