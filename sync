@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir -p /tmp/rom
+cd /tmp/rom
+repo init -q --no-repo-verify --depth=1 -u https://github.com/Halium/android -b halium-10.0 -g default,-device,-mips,-darwin,-notdefault
+repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j 30 || repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all)
+rm -rf device/halium/halium_arm64
+git clone -b halium-10.0 https://github.com/UbPorts-On7xelte/GSI.git device/halium/halium_arm64
