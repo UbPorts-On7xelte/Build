@@ -1,0 +1,28 @@
+env:
+    CIRRUS_CLONE_DEPTH: 1
+    CIRRUS_WORKING_DIR: "/tmp/ci"
+
+    rclone_conf: "ENCRYPTED[9879aed2c0ddc0395535d15bc3f47a762df3ce92157b3b5f9c31a1e26fbd25ce1b11b8477d2361bd8817db8de98377fd]"
+
+task:
+  name: master
+  timeout_in: 2h
+  only_if: $CIRRUS_REPO_OWNER == 'Doraemon-Kernel'
+  container:
+    image: dopaemon/bionic:latest
+    cpu: 8
+    memory: 24G
+
+  Install_Packages_Ubuntu_script:
+    - rm -rf *
+    - sudo apt-get update
+    - sudo apt-get install -y ccache rclone git-lfs bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libwxgtk3.0-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev
+  Rclone_Configure_script:
+    - mkdir -p ~/.config/rclone
+    - echo "$rclone_conf" > ~/.config/rclone/rclone.conf
+  git_clone_repo_script:
+    - git clone https://github.com/UbPorts-On7xelte/Build.git /tmp/ci/build
+  start_build_halium_script:
+    - cd /tmp/ci/build
+    - chmod +x build.sh
+    - ./build.sh
