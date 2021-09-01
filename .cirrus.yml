@@ -7,7 +7,7 @@ env:
 task:
   name: master
   timeout_in: 2h
-  only_if: $CIRRUS_REPO_OWNER == 'Doraemon-Kernel'
+  only_if: $CIRRUS_REPO_OWNER == 'Build'
   container:
     image: dopaemon/bionic:latest
     cpu: 8
